@@ -11,7 +11,7 @@ npm install theme-import-webpack-plugin --save-dev
 ```
 const ThemeImportWebpackPlugin = require('theme-import-webpack-plugin');
 
-// set theme in THEME env or 
+// set theme in THEME env or npm_config_theme or in options.theme
 
 module.exports = {
     resolve: {
