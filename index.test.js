@@ -46,7 +46,7 @@ describe('Resolve behavior', () => {
       rule: /^@theme/,
       path: path.resolve(__dirname, './__mocks__/themes'),
     });
-    resolver.resolve({}, __dirname, '@theme/foo', function(err, result) {
+    resolver.resolve({}, __dirname, '@theme/onlyInDefault', function(err, result) {
       expect(result).toEqual(
         path.resolve(__dirname, './__mocks__/themes/default/onlyInDefault.js'),
       );
