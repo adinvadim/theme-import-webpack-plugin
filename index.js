@@ -9,7 +9,7 @@ const assign = require('object-assign');
  * @param {RegExp} [options.rule=/^@theme/]
  * @param {String} [options.env='THEME']
  * @param {String} [options.defaultTheme='default']
- * @param {Array} [options.extensions=['.vue', '.js' , '.json']]
+ * @param {Array} [options.extensions=['.js', '.vue', '.json']]
  * @param {String} [options.theme]
  * @constructor
  */

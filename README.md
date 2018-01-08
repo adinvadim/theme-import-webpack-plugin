@@ -40,7 +40,7 @@ module.exports = {
 
 - @param {String} [options.defaultTheme='default'] If file doesn't exist in your theme, it will resolve from defaultTheme folder.
 
-- @param {Array} [options.extensions=['.vue', '.js' , '.json']]
+- @param {Array} [options.extensions=['.js', '.vue', '.json']]
 
 - @param {String} [options.theme] Also you can pass the theme in env or npm_config_theme
 ### Example
