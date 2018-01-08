@@ -1,0 +1,32 @@
+{
+  "name": "theme-import-webpack-plugin",
+  "version": "1.0.0",
+  "description": "Theme resolver webpack plugin",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adinvadim/theme-import-webpack-plugin.git"
+  },
+  "keywords": [
+    "webpack",
+    "theme",
+    "resolve",
+    "import"
+  ],
+  "author": "adin.vadim@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adinvadim/theme-import-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/adinvadim/theme-import-webpack-plugin#readme",
+  "devDependencies": {
+    "enhanced-resolve": "^4.0.0-beta.4",
+    "jest": "^22.0.4"
+  },
+  "dependencies": {
+    "object-assign": "^4.1.1"
+  }
+}
