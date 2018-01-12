@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const assign = require('object-assign');
+const fs = require('fs');
 
 /**
  * @class
@@ -13,7 +14,7 @@ const assign = require('object-assign');
  * @param {String} [options.theme]
  * @constructor
  */
-function ThemeResolverWebpackPlugin(options) {
+function ThemeImportWebpackPlugin(options) {
   this.options = assign(
     {},
     {
@@ -26,39 +27,40 @@ function ThemeResolverWebpackPlugin(options) {
   );
 }
 
-function existsSync(fsExistsSync, file, extensions) {
+function existsSync(file, extensions) {
+  const filename = path.basename(file);
+  if(/^.*\.[^.]+$/.test(filename)) {
+    return fs.existsSync(file);
+  }
   return extensions.some(item => {
-    return fsExistsSync(file + item);
+    return fs.existsSync(file + item);
   });
 }
 
-ThemeResolverWebpackPlugin.prototype.apply = function(compiler) {
+ThemeImportWebpackPlugin.prototype.apply = function(compiler) {
   const options = this.options;
-  const fs = compiler.fileSystem;
-  let theme =
+  const theme =
     process.env[options.env] ||
     process.env[`npm_config_${options.env.toLowerCase()}`] ||
     options.theme ||
     options.defaultTheme;
 
-  compiler.plugin('before-resolve', function(request, finalCallback) {
+  compiler.plugin('resolve', function(request, finalCallback) {
     if (options.rule.test(request.request)) {
       let file = request.request.replace(
         options.rule,
         path.join(options.path, theme),
       );
-      const isExist = existsSync(fs.existsSync, file, options.extensions);
+      const isExist = existsSync(file, options.extensions);
 
-      if (theme != options.defaultTheme && isExist) {
-        request.request = file;
-      } else {
-        theme = options.defaultTheme;
+      // If file doesn't exist in theme then will resolve one from default
+      if (!(theme !== options.defaultTheme && isExist)) {
         file = request.request.replace(
           options.rule,
-          path.join(options.path, theme),
+          path.join(options.path, options.defaultTheme),
         );
-        request.request = file;
       }
+      request.request = file;
       return this.doResolve(
         'parsed-resolve',
         request,
@@ -70,4 +72,4 @@ ThemeResolverWebpackPlugin.prototype.apply = function(compiler) {
   });
 };
 
-module.exports = ThemeResolverWebpackPlugin;
+module.exports = ThemeImportWebpackPlugin;
