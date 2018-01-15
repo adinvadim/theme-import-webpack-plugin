@@ -51,10 +51,10 @@ ThemeImportWebpackPlugin.prototype.apply = function(compiler) {
         options.rule,
         path.join(options.path, theme),
       );
-      const isExist = existsSync(file, options.extensions);
+      const isExist = () => existsSync(file, options.extensions);
 
       // If file doesn't exist in theme then will resolve one from default
-      if (!(theme !== options.defaultTheme && isExist)) {
+      if (!(theme !== options.defaultTheme && isExist())) {
         file = request.request.replace(
           options.rule,
           path.join(options.path, options.defaultTheme),
