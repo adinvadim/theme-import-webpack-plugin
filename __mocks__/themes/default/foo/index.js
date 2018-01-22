@@ -1,0 +1,1 @@
+module.exports = 'index.js in default/foo';

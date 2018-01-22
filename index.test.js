@@ -14,76 +14,61 @@ describe('Resolve behavior', () => {
     delete process.env.THEME;
   });
 
-  it('env is empty, resolve default theme', done => {
-    var resolver = createResolver({
+  it('env is empty, resolve default theme', (done) => {
+    const resolver = createResolver({
       rule: /^@theme/,
       path: path.resolve(__dirname, './__mocks__/themes'),
     });
-    resolver.resolve({}, __dirname, '@theme/index', function(err, result) {
-      expect(result).toEqual(
-        path.resolve(__dirname, './__mocks__/themes/default/index.js'),
-      );
+    resolver.resolve({}, __dirname, '@theme/index', (err, result) => {
+      expect(result).toEqual(path.resolve(__dirname, './__mocks__/themes/default/index.js'));
       done();
     });
   });
 
-  it('custom theme, resolve file from custom', done => {
+
+  it('custom theme, file exist only in default theme', (done) => {
     process.env.THEME = 'custom';
-    var resolver = createResolver({
+    const resolver = createResolver({
+      rule: /^@theme/,
       path: path.resolve(__dirname, './__mocks__/themes'),
     });
-    resolver.resolve({}, __dirname, '@theme/index', function(err, result) {
-      expect(result).toEqual(
-        path.resolve(__dirname, './__mocks__/themes/custom/index.js'),
-      );
+    resolver.resolve({}, __dirname, '@theme/onlyInDefault', (err, result) => {
+      expect(result).toEqual(path.resolve(__dirname, './__mocks__/themes/default/onlyInDefault.js'));
       done();
     });
   });
 
-  it('custom theme, file exist only in default theme', done => {
+  it('custom theme, resolve file from custom', (done) => {
     process.env.THEME = 'custom';
-    var resolver = createResolver({
-      rule: /^@theme/,
+    const resolver = createResolver({
       path: path.resolve(__dirname, './__mocks__/themes'),
     });
-    resolver.resolve({}, __dirname, '@theme/onlyInDefault', function(err, result) {
-      expect(result).toEqual(
-        path.resolve(__dirname, './__mocks__/themes/default/onlyInDefault.js'),
-      );
+    resolver.resolve({}, __dirname, '@theme/index', (err, result) => {
+      expect(result).toEqual(path.resolve(__dirname, './__mocks__/themes/custom/index.js'));
+      done();
+    });
+  });
+
+  it('foo in custom', (done) => {
+    process.env.THEME = 'custom';
+    const resolver = createResolver({
+      path: path.resolve(__dirname, './__mocks__/themes'),
+    });
+    resolver.resolve({}, __dirname, '@theme/foo', (err, result) => {
+      expect(result).toEqual(path.resolve(__dirname, './__mocks__/themes/custom/foo.js'));
+      done();
+    });
+  });
+
+  it('foo/index.vue in default with custom theme', (done) => {
+    process.env.THEME = 'custom';
+    const resolver = createResolver({
+      path: path.resolve(__dirname, './__mocks__/themes'),
+    });
+    resolver.resolve({}, __dirname, '@theme/foo/index.vue', (err, result) => {
+      expect(result).toEqual(path.resolve(__dirname, './__mocks__/themes/default/foo/index.vue'));
       done();
     });
   });
 
 });
-describe('Extension', () => {
-  afterEach(() => {
-    delete process.env.THEME;
-  });
-  it('check file exist in theme without extension', done => {
-    process.env.THEME = 'custom';
-    var resolver = createResolver({
-      rule: /^@theme/,
-      path: path.resolve(__dirname, './__mocks__/themes'),
-    });
-    resolver.resolve({}, __dirname, '@theme/index', function(err, result) {
-      expect(result).toEqual(
-        path.resolve(__dirname, './__mocks__/themes/custom/index.js'),
-      );
-      done();
-    });
-  })
-  it('check file exist in theme with some extension', done => {
-    process.env.THEME = 'custom';
-    var resolver = createResolver({
-      rule: /^@theme/,
-      path: path.resolve(__dirname, './__mocks__/themes'),
-    });
-    resolver.resolve({}, __dirname, '@theme/index.png', function(err, result) {
-      expect(result).toEqual(
-        path.resolve(__dirname, './__mocks__/themes/custom/index.png'),
-      );
-      done();
-    });
-  })
-
-})

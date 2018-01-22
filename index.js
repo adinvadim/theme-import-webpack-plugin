@@ -2,6 +2,7 @@
 const path = require('path');
 const assign = require('object-assign');
 const fs = require('fs');
+const forEachBail = require('enhanced-resolve/lib/forEachBail');
 
 /**
  * @class
@@ -10,7 +11,6 @@ const fs = require('fs');
  * @param {RegExp} [options.rule=/^@theme/]
  * @param {String} [options.env='THEME']
  * @param {String} [options.defaultTheme='default']
- * @param {Array} [options.extensions=['.js', '.vue', '.json']]
  * @param {String} [options.theme]
  * @constructor
  */
@@ -21,54 +21,49 @@ function ThemeImportWebpackPlugin(options) {
       rule: /^@theme/,
       env: 'THEME',
       defaultTheme: 'default',
-      extensions: ['.js', '.vue', '.json'],
     },
     options,
   );
 }
 
-function existsSync(file, extensions) {
-  const filename = path.basename(file);
-  if(/^.*\.[^.]+$/.test(filename)) {
-    return fs.existsSync(file);
-  }
-  return extensions.some(item => {
-    return fs.existsSync(file + item);
-  });
-}
-
-ThemeImportWebpackPlugin.prototype.apply = function(compiler) {
+ThemeImportWebpackPlugin.prototype.apply = function (compiler) {
   const options = this.options;
   const theme =
     process.env[options.env] ||
     process.env[`npm_config_${options.env.toLowerCase()}`] ||
-    options.theme ||
-    options.defaultTheme;
+    options.theme;
 
-  compiler.plugin('resolve', function(request, finalCallback) {
-    if (options.rule.test(request.request)) {
-      let file = request.request.replace(
-        options.rule,
-        path.join(options.path, theme),
-      );
-      const isExist = () => existsSync(file, options.extensions);
+  const attempts = [];
 
-      // If file doesn't exist in theme then will resolve one from default
-      if (!(theme !== options.defaultTheme && isExist())) {
-        file = request.request.replace(
-          options.rule,
-          path.join(options.path, options.defaultTheme),
-        );
-      }
-      request.request = file;
-      return this.doResolve(
-        'parsed-resolve',
-        request,
-        `found file: ${file}`,
-        finalCallback,
-      );
+  theme && attempts.push(theme);
+  attempts.push(options.defaultTheme);
+  compiler.plugin('resolve', function (request, finalCallback) {
+    if (!options.rule.test(request.request)) {
+      return finalCallback();
     }
-    return finalCallback();
+    const dirPath = request.path;
+
+    forEachBail(
+      attempts,
+      function (theme, innerCallback) {
+        const file = request.request.replace(
+          options.rule,
+          path.join(options.path, theme),
+        );
+        const obj = assign({}, request, {
+          request: file
+        });
+        return compiler.doResolve(
+          'parsed-resolve',
+          obj,
+          `found file: ${file}`,
+          innerCallback,
+        );
+      },
+      function (...args) {
+        return finalCallback(...args);
+      }
+    );
   });
 };
 
