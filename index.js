@@ -1,7 +1,5 @@
 'use strict';
-const path = require('path');
 const assign = require('object-assign');
-const fs = require('fs');
 const forEachBail = require('enhanced-resolve/lib/forEachBail');
 
 /**
@@ -26,7 +24,7 @@ function ThemeImportWebpackPlugin(options) {
   );
 }
 
-ThemeImportWebpackPlugin.prototype.apply = function (compiler) {
+ThemeImportWebpackPlugin.prototype.apply = function (resolver) {
   const options = this.options;
   const theme =
     process.env[options.env] ||
@@ -34,12 +32,13 @@ ThemeImportWebpackPlugin.prototype.apply = function (compiler) {
     options.theme;
 
   const attempts = [];
+  const target = resolver.ensureHook('parsed-resolve');
 
   theme && attempts.push(theme);
   attempts.push(options.defaultTheme);
-  compiler.plugin('resolve', function (request, finalCallback) {
+  resolver.getHook('resolve').tapAsync("ThemeImportPlugin", (request, resolveContext, callback) => {
     if (!options.rule.test(request.request)) {
-      return finalCallback();
+      return callback();
     }
     const dirPath = request.path;
 
@@ -48,20 +47,25 @@ ThemeImportWebpackPlugin.prototype.apply = function (compiler) {
       function (theme, innerCallback) {
         const file = request.request.replace(
           options.rule,
-          path.join(options.path, theme),
+          resolver.join(options.path, theme),
         );
         const obj = assign({}, request, {
           request: file
         });
-        return compiler.doResolve(
-          'parsed-resolve',
+        return resolver.doResolve(
+          target,
           obj,
           `found file: ${file}`,
+          resolveContext,
           innerCallback,
         );
       },
-      function (...args) {
-        return finalCallback(...args);
+      function (err, result) {
+        if(err) return callback(err);
+
+        // Don't allow other aliasing or raw request
+        if(result === undefined) return callback(null, null);
+        callback(null, result);
       }
     );
   });
